@@ -30,7 +30,7 @@
 
         
 - [X]  **5. 코드가 간결하고 효율적인가요?**
-    - 한국어 형태소 분석기를 토크나이저 함수에 내장
+    - 한국어 형태소 분석기를 토크나이저 함수에 내장  
     ![image](https://github.com/user-attachments/assets/c6bde67e-2c43-4ca0-b3a7-75f982a14860)
 
     
