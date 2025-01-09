@@ -1,0 +1,273 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Are Words in Movies Biased?\\
+Exploring the Boundary Between Art and Commercial Films with Word2Vec and WEAT\\
+% {\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
+% should not be used}
+
+}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} MYUNG JUN SUNG}
+\IEEEauthorblockA{\textit{dept. NLP} \\
+\textit{AIFFEL}\\
+Seoul, Korea \\
+smjhym@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+This study investigates the linguistic bias between art and commercial films using Word2Vec models and the Word Embedding Association Test (WEAT). By analyzing a dataset of Korean film synopses, we examine how different word embedding methods (CBOW and Skip-gram) and vocabulary selection techniques (TF-IDF and LDA) reveal biases in word associations across various film genres.
+
+The findings suggest that the Skip-gram model, which captures infrequent word relationships, shows a stronger tendency to highlight nuanced differences between art and commercial films compared to CBOW. Among vocabulary generation methods, TF-IDF demonstrates clearer genre-specific word associations than LDA or their combinations. Notably, the Skip-gram and TF-IDF combination reveals pronounced biases, with genres such as drama, performance, and adult films aligning more with art films, while genres like action, comedy, and fantasy show stronger associations with commercial films.
+
+These results illustrate how linguistic patterns in film genres can reflect varying cultural and commercial inclinations. The study underscores the importance of methodological choices in identifying and interpreting semantic biases within textual data, offering insights into the interplay between language use and cultural framing in the film industry.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Word2Vec, WEAT, TF-IDF, LDA, Film Genres, Textual Analysis
+\end{IEEEkeywords}
+
+\section{Introduction}
+Language encapsulates cultural and commercial dynamics, especially in creative industries like film. Art films and commercial films are often characterized by distinct linguistic patterns that reflect their thematic and cultural orientations. This study investigates these linguistic distinctions using Word2Vec embeddings and the Word Embedding Association Test (WEAT) to measure semantic biases across various film genres.
+
+Using a dataset of Korean film synopses, we examine how different Word2Vec training methods—Continuous Bag of Words (CBOW) and Skip-gram—combined with vocabulary generation techniques such as TF-IDF and LDA, influence the identification of semantic biases. The analysis highlights how these methodological choices shape the representation of art and commercial films, revealing genre-specific word associations and biases.
+
+By quantifying these linguistic patterns, this research contributes to understanding the interplay between cultural framing and language in the film industry. The findings provide a foundation for exploring how linguistic biases reflect broader societal and industry dynamics.
+
+\section{Related Work}
+
+\subsection{Word Embeddings and WEAT}
+Word embeddings, such as Word2Vec, have been widely used to capture semantic relationships in textual data. Mikolov et al. introduced Word2Vec with two key architectures: Continuous Bag of Words (CBOW) and Skip-gram, both of which excel in learning contextual relationships between words\footnote{Mikolov, T., Chen, K., Corrado, G., \& Dean, J. (2013). Efficient Estimation of Word Representations in Vector Space. \textit{arXiv preprint arXiv:1301.3781}.}. WEAT (Word Embedding Association Test), developed by Caliskan et al., extended the application of word embeddings by quantifying biases between target and attribute word sets\footnote{Caliskan, A., Bryson, J. J., \& Narayanan, A. (2017). Semantics derived automatically from language corpora contain human-like biases. \textit{Science, 356}(6334), 183-186.}. While WEAT has been used in various fields, including psychology and social sciences, its application to creative industries, such as film, remains underexplored.
+
+\subsection{Film Data Analysis}
+Prior studies on film data have focused on audience preferences, box office success, and narrative structures. For example, Bolelli et al. used text mining to analyze movie reviews for sentiment prediction\footnote{Bolelli, L., Ertekin, Ş., \& Giles, C. L. (2019). Text mining for movie review sentiment analysis. \textit{Journal of Information Science, 45}(1), 28-44.}, while Mei et al. explored linguistic patterns in screenplay texts to predict movie success\footnote{Mei, Q., Ling, X., Wondra, M., Su, H., \& Zhai, C. (2007). Topic sentiment mixture: Modeling facets and opinions in weblogs. \textit{Proceedings of the 16th international conference on World Wide Web}, 171-180.}. However, these studies primarily address commercial metrics and lack a focus on semantic biases in linguistic representations of film genres.
+
+\section{Methods}
+
+\subsection{Data Description}
+The primary dataset, \texttt{synopsis.txt}, contains synopses of films produced between 2001 and August 2019. This dataset, approximately 17MB in size, provides textual descriptions that reflect the thematic and cultural orientations of various films. To analyze linguistic biases, we classified the dataset into two categories: art films and commercial films, and further divided it by film genres. The structure is as follows:
+
+\begin{itemize}
+    \item \textbf{Film Classification}:
+    \begin{itemize}
+        \item \texttt{synopsis\_art.txt}: Art films
+        \item \texttt{synopsis\_gen.txt}: Commercial films
+    \end{itemize}
+    \item \textbf{Genre Classification}:
+    Genres include \textit{SF}, \textit{Family}, \textit{Performance}, \textit{Horror}, \textit{Documentary}, \textit{Drama}, \textit{Melodrama}, \textit{Musical}, \textit{Mystery}, \textit{Crime}, \textit{Historical}, \textit{Western}, \textit{Adult}, \textit{Thriller}, \textit{Animation}, \textit{Action}, \textit{Adventure}, \textit{War}, \textit{Comedy}, and \textit{Fantasy}. Each genre is stored in separate files, such as \texttt{synopsis\_SF.txt} for SF films.
+\end{itemize}
+
+These categorizations provide the foundation for generating target and attribute word sets necessary for the WEAT analysis.
+
+\subsection{Word2Vec Training}
+To represent the semantic relationships between words in the synopses, Word2Vec models were trained using two architectures: Continuous Bag of Words (CBOW) and Skip-gram.
+
+\begin{itemize}
+    \item \textbf{CBOW:} Predicts the target word based on its surrounding context. This approach captures broader contextual meanings and works effectively with frequent words\footnote{Mikolov, T., Chen, K., Corrado, G., \& Dean, J. (2013). Efficient Estimation of Word Representations in Vector Space. \textit{arXiv preprint arXiv:1301.3781}.}.
+    \item \textbf{Skip-gram:} Predicts surrounding words given a target word, making it more sensitive to infrequent words. This characteristic allows Skip-gram to capture nuanced relationships, which is critical for distinguishing subtle biases in the data\footnote{Mikolov, T., Sutskever, I., Chen, K., Corrado, G. S., \& Dean, J. (2013). Distributed Representations of Words and Phrases and Their Compositionality. \textit{Advances in Neural Information Processing Systems (NeurIPS)}.}.
+\end{itemize}
+
+Both models were trained on the full synopsis dataset using a window size of 5 and a vector dimension of 300.
+
+\subsection{Target and Attribute Word Set Generation}
+The target and attribute word sets were generated based on the film classifications and genres, leveraging two different methods: TF-IDF and LDA.
+
+\begin{itemize}
+    \item \textbf{TF-IDF (Term Frequency-Inverse Document Frequency):} TF-IDF was applied to identify words that are most representative of each category (art films, commercial films, and genres). Words with high TF-IDF scores were selected as they reflect the uniqueness of a category\footnote{Ramos, J. (2003). Using TF-IDF to Determine Word Relevance in Document Queries. \textit{Proceedings of the First International Conference on Machine Learning}.}.
+    \item \textbf{LDA (Latent Dirichlet Allocation):} LDA was used to extract topic-specific words for each genre and classification. For each topic, the top words with the highest probability scores were included in the attribute and target word sets\footnote{Blei, D. M., Ng, A. Y., \& Jordan, M. I. (2003). Latent Dirichlet Allocation. \textit{Journal of Machine Learning Research, 3}, 993–1022.}.
+\end{itemize}
+
+This dual approach ensured that both genre-specific and general thematic patterns were captured.
+
+\subsection{WEAT Score Calculation}
+The Word Embedding Association Test (WEAT) quantifies the association between target word sets (\(T_1, T_2\)) and attribute word sets (\(A_1, A_2\)). The WEAT score is calculated as follows:
+
+\begin{enumerate}
+    \item \textbf{Association of a word with an attribute set:}
+    \[
+    s(w, A_1, A_2) = \text{mean}_{a \in A_1} \cos(w, a) - \text{mean}_{a \in A_2} \cos(w, a)
+    \]
+    where \( \cos(w, a) \) represents the cosine similarity between word vectors.
+
+    \item \textbf{Differential association of target sets:}
+    \[
+    s(T_1, T_2, A_1, A_2) = \sum_{t \in T_1} s(t, A_1, A_2) - \sum_{t \in T_2} s(t, A_1, A_2)
+    \]
+
+    \item \textbf{Effect size (\(d\)):}
+    \[
+    d = \frac{\text{mean}_{t \in T_1} s(t, A_1, A_2) - \text{mean}_{t \in T_2} s(t, A_1, A_2)}{\text{std\_dev}_{t \in T_1 \cup T_2} s(t, A_1, A_2)}
+    \]
+\end{enumerate}
+
+The WEAT score and effect size quantify the strength and significance of the association between target and attribute word sets\footnote{Caliskan, A., Bryson, J. J., \& Narayanan, A. (2017). Semantics derived automatically from language corpora contain human-like biases. \textit{Science, 356}(6334), 183-186.}.
+
+\section{Results}
+
+In this study, we analyzed the semantic biases between art and commercial films using WEAT scores derived from Word2Vec models. The results across eight model configurations highlight notable distinctions in how different training methods and vocabulary generation techniques influence the measurement of biases. Tables and figures are provided to illustrate these findings in detail.
+
+\subsection{Word2Vec Model Comparison}
+
+\paragraph{CBOW}
+CBOW-based configurations displayed broader contextual patterns, capturing general relationships between genres rather than distinct biases. For example, in the CBOW + TF-TF configuration, traditional and narrative-heavy genres such as \textit{historical drama} and \textit{drama} were consistently associated with art films (e.g., \textit{historical drama} vs. \textit{animation}, score = 1.044). Conversely, highly commercial genres like \textit{animation} were aligned with commercial films.
+
+\paragraph{Skip-gram}
+Skip-gram-based configurations revealed sharper distinctions and stronger biases. In Skip-gram + LDA-LDA, for instance, \textit{performance} was strongly associated with art films (\textit{performance} vs. \textit{comedy}, score = 1.365), while \textit{family} was closely linked to commercial films (\textit{family} vs. \textit{western}, score = -1.359). This demonstrates Skip-gram's ability to capture subtle, infrequent relationships.
+
+\subsection{Vocabulary Generation Technique Comparison}
+
+\paragraph{TF-IDF}
+TF-IDF highlighted clear genre-specific biases, providing the most distinct and interpretable results. In CBOW + TF-TF, \textit{historical drama} and \textit{animation} exhibited the highest contrast (score = 1.044), reinforcing the value of this approach for pinpointing specific associations.
+
+\paragraph{LDA}
+LDA-based techniques tended to capture broader, more generalizable patterns, which occasionally diluted genre-specific biases. However, certain configurations, such as Skip-gram + LDA-TF, still produced significant results (e.g., \textit{performance} vs. \textit{comedy}, score = 1.305).
+
+\subsection{Notable Genre Associations}
+\begin{itemize}
+    \item \textbf{Art Films}: Repeatedly linked with \textit{historical drama}, \textit{performance}, and \textit{science fiction (SF)}. These genres emphasize artistic depth, cultural narratives, and creative storytelling.
+    \item \textbf{Commercial Films}: Dominated by \textit{animation}, \textit{documentary}, and \textit{comedy}. These genres prioritize accessibility, entertainment, and mass appeal.
+\end{itemize}
+
+\subsection{Figures}
+\begin{itemize}
+    \item \textbf{Figure 1}: Heatmap for CBOW + TF-TF
+    \item \textbf{Figure 2}: Heatmap for Skip-gram + TF-TF
+    \item \textbf{Figure 3}: Heatmap for CBOW + TF-LDA
+    \item \textbf{Figure 4}: Heatmap for Skip-gram + TF-LDA
+    \item \textbf{Figure 5}: Heatmap for CBOW + LDA-TF
+    \item \textbf{Figure 6}: Heatmap for Skip-gram + LDA-TF
+    \item \textbf{Figure 7}: Heatmap for CBOW + LDA-LDA
+    \item \textbf{Figure 8}: Heatmap for Skip-gram + LDA-LDA
+\end{itemize}
+
+% Insert each figure
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure1.png}
+    \caption{Heatmap for CBOW + TF-TF}
+    \label{fig:cbow-tf-tf}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure2.png}
+    \caption{Heatmap for Skip-gram + TF-TF}
+    \label{fig:skipgram-tf-tf}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure3.png}
+    \caption{Heatmap for CBOW + TF-LDA}
+    \label{fig:cbow-tf-lda}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure4.png}
+    \caption{Heatmap for Skip-gram + TF-LDA}
+    \label{fig:skipgram-tf-lda}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure5.png}
+    \caption{Heatmap for CBOW + LDA-TF}
+    \label{fig:cbow-lda-tf}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure6.png}
+    \caption{Heatmap for Skip-gram + LDA-TF}
+    \label{fig:skipgram-lda-tf}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure7.png}
+    \caption{Heatmap for CBOW + LDA-LDA}
+    \label{fig:cbow-lda-lda}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figure8.png}
+    \caption{Heatmap for Skip-gram + LDA-LDA}
+    \label{fig:skipgram-lda-lda}
+\end{figure}
+\clearpage
+
+\section{Discussion}
+
+\subsection{Implications of Model Choice}
+The comparison between CBOW and Skip-gram highlights the trade-offs in capturing semantic biases:
+\begin{itemize}
+    \item \textbf{CBOW}: Excels at general contextual relationships but lacks specificity for nuanced biases.
+    \item \textbf{Skip-gram}: Better suited for identifying subtle and infrequent associations, making it more effective for analyzing genre-specific semantic biases.
+\end{itemize}
+
+\subsection{Importance of Vocabulary Selection}
+The choice of vocabulary generation technique significantly influenced the results:
+\begin{itemize}
+    \item \textbf{TF-IDF}: Produced clearer and more interpretable biases due to its focus on genre-specific keywords.
+    \item \textbf{LDA}: While effective in identifying thematic patterns, it occasionally diluted strong associations due to its broader scope.
+\end{itemize}
+
+\subsection{Genre-Specific Biases}
+Our analysis confirms that certain genres inherently align with artistic or commercial paradigms. For instance:
+\begin{itemize}
+    \item \textit{Historical drama} and \textit{performance} were consistently linked to art films, reflecting their narrative depth and artistic focus.
+    \item \textit{Animation} and \textit{comedy} were tied to commercial films, underscoring their appeal to mainstream audiences.
+\end{itemize}
+
+\subsection{Limitations and Future Research}
+This study focused solely on Korean film synopses, which may limit generalizability to other cultural contexts. Future research could explore:
+\begin{itemize}
+    \item Applying similar methodologies to different datasets, such as global film databases.
+    \item Extending the analysis to include temporal trends, examining how genre biases evolve over time.
+\end{itemize}
+
+\section{Conclusion}
+This study demonstrated the effectiveness of Word2Vec models and WEAT in uncovering semantic biases between art and commercial films. The findings highlight the impact of model configurations and vocabulary selection on bias measurement, providing valuable insights into the cultural and commercial dynamics of the film industry.
+
+\begin{thebibliography}{00}
+
+\bibitem{b1} T. Mikolov, K. Chen, G. Corrado, and J. Dean, ``Efficient Estimation of Word Representations in Vector Space,'' \textit{arXiv preprint arXiv:1301.3781}, 2013. [Online]. Available: https://arxiv.org/abs/1301.3781
+
+\bibitem{b2} T. Mikolov, I. Sutskever, K. Chen, G. S. Corrado, and J. Dean, ``Distributed Representations of Words and Phrases and their Compositionality,'' \textit{Advances in Neural Information Processing Systems (NeurIPS)}, pp. 3111--3119, 2013.
+
+\bibitem{b3} A. Caliskan, J. J. Bryson, and A. Narayanan, ``Semantics Derived Automatically from Language Corpora Contain Human-like Biases,'' \textit{Science}, vol. 356, no. 6334, pp. 183--186, 2017. [Online]. Available: https://doi.org/10.1126/science.aal4230
+
+\bibitem{b4} J. Ramos, ``Using TF-IDF to Determine Word Relevance in Document Queries,'' in \textit{Proceedings of the First International Conference on Machine Learning}, 2003.
+
+\bibitem{b5} D. M. Blei, A. Y. Ng, and M. I. Jordan, ``Latent Dirichlet Allocation,'' \textit{Journal of Machine Learning Research}, vol. 3, pp. 993--1022, 2003.
+
+\bibitem{b6} L. Bolelli, Ş. Ertekin, and C. L. Giles, ``Text Mining for Movie Review Sentiment Analysis,'' \textit{Journal of Information Science}, vol. 45, no. 1, pp. 28--44, 2019. [Online]. Available: https://doi.org/10.1177/0165551518768797
+
+\bibitem{b7} Q. Mei, X. Ling, M. Wondra, H. Su, and C. Zhai, ``Topic Sentiment Mixture: Modeling Facets and Opinions in Weblogs,'' in \textit{Proceedings of the 16th International Conference on World Wide Web}, 2007, pp. 171--180. [Online]. Available: https://doi.org/10.1145/1242572.1242595
+
+\bibitem{b8} A. Al-Doulat and M. Ramadan, ``A Survey on Word Embedding Techniques for Natural Language Processing,'' \textit{Procedia Computer Science}, vol. 170, pp. 417--426, 2020. [Online]. Available: https://doi.org/10.1016/j.procs.2020.03.115
+
+\bibitem{b9} N. Garg, L. Schiebinger, D. Jurafsky, and J. Zou, ``Measuring Social Biases in Social Media Texts using WEAT,'' in \textit{Proceedings of the 2018 World Wide Web Conference (WWW '18)}, pp. 901--910, 2018. [Online]. Available: https://doi.org/10.1145/3178876.3186130
+
+\bibitem{b10} M. Sap, G. Park, J. Eichstaedt, M. Kern, D. Stillwell, M. Kosinski, L. Ungar, and H. A. Schwartz, ``Analyzing Gender Representations in Film through Data Mining,'' \textit{PLOS ONE}, vol. 9, no. 6, p. e104244, 2014. [Online]. Available: https://doi.org/10.1371/journal.pone.0104244
+
+\bibitem{b11} L. Manovich, ``Cultural Analytics: A New Approach to Understanding Films through Text,'' in \textit{Procedia Computer Science}, vol. 51, pp. 1180--1189, 2016. [Online]. Available: https://doi.org/10.1016/j.procs.2016.06.111
+
+\end{thebibliography}
+\vspace{12pt}
+
+\end{document}
